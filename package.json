@@ -1,0 +1,58 @@
+{
+    "name": "aron-import",
+    "displayName": "aron-import",
+    "description": "Typescript import sorter",
+    "version": "0.0.3",
+    "publisher": "someblueszr",
+    "engines": {
+        "vscode": "^1.25.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/someblue/aron-import.git"
+    },
+    "icon": "icon.png",
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:extension.aronImportSort",
+        "onCommand:extension.aronImportEnable",
+        "onCommand:extension.aronImportDisable",
+        "onLanguage:typescript"
+    ],
+    "main": "./out/extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "extension.aronImportSort",
+                "title": "Aron Import Sort"
+            },
+            {
+                "command": "extension.aronImportEnable",
+                "title": "Aron Import Enable"
+            },
+            {
+                "command": "extension.aronImportDisable",
+                "title": "Aron Import Disable"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^2.2.42",
+        "@types/node": "^7.0.43",
+        "tslint": "^5.8.0",
+        "vscode": "^1.1.6"
+    },
+    "dependencies": {
+        "app-root-path": "^2.1.0",
+        "typescript": "^2.9.2"
+    }
+}
