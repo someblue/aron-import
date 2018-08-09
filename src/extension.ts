@@ -140,6 +140,25 @@ class ImportDeclare {
     }
 }
 
+function moveCustomLibraryToLast(imports: ImportDeclare[]): ImportDeclare[] {
+    const customLibraryPatterns = vscode.workspace.getConfiguration('aron.import').get<string[]>('customLibraryPatterns', []);
+    const customLibraryRegexs = customLibraryPatterns.map(e => new RegExp(e));
+    let thirdPartyLibrarys: ImportDeclare[] = [];
+    let customLibrarys: ImportDeclare[] = [];
+    imports.forEach(e => {
+        const isCustomLibrary = customLibraryRegexs.some(reg => reg.test(e.path));
+        if (isCustomLibrary) {
+            customLibrarys.push(e);
+        } else {
+            thirdPartyLibrarys.push(e);
+        }
+    });
+    return [
+        ...thirdPartyLibrarys,
+        ...customLibrarys,
+    ];
+}
+
 function sortImportDeclares(imports: ImportDeclare[]): ImportDeclare[][] {
     const sortSpecificTypeImports = (type: PathType) => {
         return imports.filter(e => e.type === type).sort((a, b) => {
@@ -153,7 +172,7 @@ function sortImportDeclares(imports: ImportDeclare[]): ImportDeclare[][] {
     };
     return [
         sortSpecificTypeImports(PathType.Standrand),
-        sortSpecificTypeImports(PathType.Library),
+        moveCustomLibraryToLast(sortSpecificTypeImports(PathType.Library)),
         sortSpecificTypeImports(PathType.ProjectAbsolute),
         sortSpecificTypeImports(PathType.ProjectRelative),
     ];

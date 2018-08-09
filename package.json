@@ -36,7 +36,21 @@
                 "command": "extension.aronImportDisable",
                 "title": "Aron Import Disable"
             }
-        ]
+        ],
+        "configuration": {
+            "title": "Aron Import",
+            "properties": {
+                "aron.import.customLibraryPatterns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [],
+                    "uniqueItems": true,
+                    "description": "Define custom library pattern. The order of custom library is always latter than third-party library"
+                }
+            }
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
