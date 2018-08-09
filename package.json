@@ -2,7 +2,7 @@
     "name": "aron-import",
     "displayName": "aron-import",
     "description": "Typescript import sorter",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "publisher": "someblueszr",
     "engines": {
         "vscode": "^1.25.0"
@@ -25,15 +25,15 @@
     "contributes": {
         "commands": [
             {
-                "command": "extension.aronImportSort",
+                "command": "extension.aron.import.sort",
                 "title": "Aron Import Sort"
             },
             {
-                "command": "extension.aronImportEnable",
+                "command": "extension.aron.import.enable",
                 "title": "Aron Import Enable"
             },
             {
-                "command": "extension.aronImportDisable",
+                "command": "extension.aron.import.disable",
                 "title": "Aron Import Disable"
             }
         ],

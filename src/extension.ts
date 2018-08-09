@@ -250,15 +250,15 @@ export function activate(context: vscode.ExtensionContext) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    const aronImportSortCommand = vscode.commands.registerCommand('extension.aronImportSort', () => {
+    const aronImportSortCommand = vscode.commands.registerCommand('extension.aron.import.sort', () => {
         work();
     });
 
-    const aronImportEnableCommand = vscode.commands.registerCommand('extension.aronImportEnable', () => {
+    const aronImportEnableCommand = vscode.commands.registerCommand('extension.aron.import.enable', () => {
         aronImportEnable = true;
     });
 
-    const aronImportDisableCommand = vscode.commands.registerCommand('extension.aronImportDisable', () => {
+    const aronImportDisableCommand = vscode.commands.registerCommand('extension.aron.import.disable', () => {
         aronImportEnable = false;
     });
 

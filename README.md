@@ -12,11 +12,11 @@ All you need to do just save file as before.
 
 ## Commands
 
-press `F1` then enter `aronImportSort` to trigger sort manually.
+press `F1` then enter `aron import sort` to trigger sort manually.
 
-press `F1` then enter `aronImportDisable` to disable automatical sort.
+press `F1` then enter `aron import disable` to disable automatical sort.
 
-press `F1` then enter `aronImportEnable` to enable automatical sort again.
+press `F1` then enter `aron import enable` to enable automatical sort again.
 
 ## Known Issues
 
