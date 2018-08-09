@@ -98,6 +98,8 @@ class ImportDeclare {
     public type = PathType.Untyped;
 
     public normalizePath(fileAbsPath: string) {
+        fileAbsPath = fileAbsPath.replace(/\\/g, '/'); // transfer windows path seperator
+
         if (stringContains(this.path, '@angular')) {
             this.type = PathType.Standrand;
             if (this.path.indexOf('@angular') > 0) {
@@ -121,7 +123,6 @@ class ImportDeclare {
         }
 
         // must starts with ./ or ../
-        fileAbsPath = fileAbsPath.replace('\\', '/'); // transfer windows path seperator
         const absPath = pathJoin(fileAbsPath, this.path);
         if (!stringContains(absPath, '/app/')) {
             throw new Error(`invalid path, path [${absPath}] not contains /app/`);
