@@ -121,6 +121,7 @@ class ImportDeclare {
         }
 
         // must starts with ./ or ../
+        fileAbsPath = fileAbsPath.replace('\\', '/'); // transfer windows path seperator
         const absPath = pathJoin(fileAbsPath, this.path);
         if (!stringContains(absPath, '/app/')) {
             throw new Error(`invalid path, path [${absPath}] not contains /app/`);
