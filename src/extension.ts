@@ -2,6 +2,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 
 const projectAbsolutePathDepth = 2;
 
@@ -17,6 +18,74 @@ enum PathType {
 
 function stringContains(str: string, substr: string): boolean {
     return str.indexOf(substr) !== -1;
+}
+
+function convertToSlashPath(p: string): string {
+    return p.replace(/\\/g, '/');
+}
+
+export class AronConfig {
+    public customLibraryPatterns: string[] = [];
+
+    public static parse(filePath: string): Thenable<AronConfig> {
+        return new Promise((resolve, reject) => {
+            this.findFirstExistFile(this.aronConfigPossibleLocation(filePath))
+                .then(
+                    aronConfigFilePath => {
+                        if (!aronConfigFilePath) {
+                            resolve(undefined);
+                        }
+                        fs.readFile(aronConfigFilePath, (err, data) => {
+                            if (err) {
+                                reject(err);
+                            }
+                            const configRawObject = JSON.parse(data.toString());
+                            const aronConfig = new AronConfig();
+                            aronConfig.customLibraryPatterns = configRawObject.customLibraryPatterns;
+                            resolve(aronConfig);
+                        });
+                    },
+                    err => {
+                        reject(err);
+                    },
+            );
+        });
+    }
+
+    private static aronConfigPossibleLocation(filePath: string): string[] {
+        let files = [];
+        while (filePath) {
+            var dir = filePath.substring(0, filePath.lastIndexOf('/'));
+            if (dir === '') {
+                break;
+            }
+            files.push(dir + '/aron.json');
+            filePath = dir;
+        }
+        return files;
+    }
+
+    private static findFirstExistFile(filePaths: string[]): Thenable<string> {
+        return new Promise((resolve, reject) => {
+            let failCount = 0;
+            let hasFound = false;
+            filePaths.forEach(fp => {
+                fs.access(fp, fs.constants.R_OK, (err) => {
+                    if (hasFound) {
+                        return;
+                    }
+                    if (!err) {
+                        hasFound = true;
+                        resolve(fp);
+                    }
+                    failCount++;
+                    if (failCount >= filePaths.length) {
+                        resolve('');
+                    }
+                });
+            });
+        });
+    }
 }
 
 class Path {
@@ -98,8 +167,6 @@ class ImportDeclare {
     public type = PathType.Untyped;
 
     public normalizePath(fileAbsPath: string) {
-        fileAbsPath = fileAbsPath.replace(/\\/g, '/'); // transfer windows path seperator
-
         if (stringContains(this.path, '@angular')) {
             this.type = PathType.Standrand;
             if (this.path.indexOf('@angular') > 0) {
@@ -140,8 +207,8 @@ class ImportDeclare {
     }
 }
 
-function moveCustomLibraryToLast(imports: ImportDeclare[]): ImportDeclare[] {
-    const customLibraryPatterns = vscode.workspace.getConfiguration('aron.import').get<string[]>('customLibraryPatterns', []);
+function moveCustomLibraryToLast(imports: ImportDeclare[], customLibraryPatterns: string[]): ImportDeclare[] {
+    // const customLibraryPatterns = vscode.workspace.getConfiguration('aron.import').get<string[]>('customLibraryPatterns', []);
     const customLibraryRegexs = customLibraryPatterns.map(e => new RegExp(e));
     let thirdPartyLibrarys: ImportDeclare[] = [];
     let customLibrarys: ImportDeclare[] = [];
@@ -159,7 +226,7 @@ function moveCustomLibraryToLast(imports: ImportDeclare[]): ImportDeclare[] {
     ];
 }
 
-function sortImportDeclares(imports: ImportDeclare[]): ImportDeclare[][] {
+function sortImportDeclares(imports: ImportDeclare[], customLibraryPatterns: string[]): ImportDeclare[][] {
     const sortSpecificTypeImports = (type: PathType) => {
         return imports.filter(e => e.type === type).sort((a, b) => {
             if (a.path < b.path) {
@@ -172,26 +239,26 @@ function sortImportDeclares(imports: ImportDeclare[]): ImportDeclare[][] {
     };
     return [
         sortSpecificTypeImports(PathType.Standrand),
-        moveCustomLibraryToLast(sortSpecificTypeImports(PathType.Library)),
+        moveCustomLibraryToLast(sortSpecificTypeImports(PathType.Library), customLibraryPatterns),
         sortSpecificTypeImports(PathType.ProjectAbsolute),
         sortSpecificTypeImports(PathType.ProjectRelative),
     ];
 }
 
-function work() {
+function work(): Thenable<any> | null {
     if (!aronImportEnable) {
-        return;
+        return null;
     }
 
     if (!vscode.window.activeTextEditor) {
         vscode.window.showInformationMessage('no active editor');
-        return;
+        return null;
     }
 
     const doc = vscode.window.activeTextEditor.document;
 
     if (doc.languageId !== 'typescript') {
-        return;
+        return null;
     }
 
     let importDeclares: ImportDeclare[] = [];
@@ -221,21 +288,28 @@ function work() {
     }
 
     if (!importDeclares.length) {
-        return;
+        return null;
     }
 
-    importDeclares.forEach(e => e.normalizePath(doc.uri.fsPath));
-    const importSections = sortImportDeclares(importDeclares);
+    const docPath = convertToSlashPath(doc.uri.fsPath);
+    return AronConfig.parse(docPath).then(aronConfig => {
+        if (!vscode.window.activeTextEditor) {
+            return false;
+        }
 
-    vscode.window.activeTextEditor.edit(editBuilder => {
-        editBuilder.replace(
-            new vscode.Range(startPos, endPos),
-            importSections
-                .filter(sec => sec.length > 0)
-                .map(sec => {
-                    return sec.map(e => `import ${e.tokens} from '${e.path}';`).join('\n');
-                })
-                .join('\n\n'));
+        importDeclares.forEach(e => e.normalizePath(docPath));
+        const importSections = sortImportDeclares(importDeclares, aronConfig ? aronConfig.customLibraryPatterns : []);
+
+        return vscode.window.activeTextEditor.edit(editBuilder => {
+            editBuilder.replace(
+                new vscode.Range(startPos, endPos),
+                importSections
+                    .filter(sec => sec.length > 0)
+                    .map(sec => {
+                        return sec.map(e => `import ${e.tokens} from '${e.path}';`).join('\n');
+                    })
+                    .join('\n\n'));
+        });
     });
 }
 
@@ -263,7 +337,10 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     const onWillSaveTextDocumentEvent = vscode.workspace.onWillSaveTextDocument(e => {
-        work();
+        let workResult = work();
+        if (workResult) {
+            e.waitUntil(workResult);
+        }
     });
 
     console.log('on will save register');
