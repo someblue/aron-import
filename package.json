@@ -2,7 +2,7 @@
     "name": "aron-import",
     "displayName": "aron-import",
     "description": "Typescript import sorter",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "publisher": "someblueszr",
     "engines": {
         "vscode": "^1.25.0"
@@ -35,6 +35,18 @@
             {
                 "command": "extension.aron.import.disable",
                 "title": "Aron Import Disable"
+            },
+            {
+                "command": "extension.aron.template.format",
+                "title": "Aron Template Format"
+            },
+            {
+                "command": "extension.aron.template.format.enable",
+                "title": "Aron Template Format Enable"
+            },
+            {
+                "command": "extension.aron.template.format.disable",
+                "title": "Aron Template Format Disable"
             }
         ]
     },

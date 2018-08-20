@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 
 import { ImportSorter } from './import-sorter';
-import { formatAngularTemplate } from './angular-template-formatter';
+import { AngularTemplateFormatter } from './angular-template-formatter';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -15,6 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "aron-import" is now active!');
 
     const importSorter = new ImportSorter();
+    const angularTemplateFormatter = new AngularTemplateFormatter();
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
@@ -31,8 +32,20 @@ export function activate(context: vscode.ExtensionContext) {
         importSorter.enabled = false;
     });
 
+    const angularTemplateFormatCommand = vscode.commands.registerCommand('extension.aron.template.format', () => {
+        angularTemplateFormatter.formatVscodeDocument();
+    });
+
+    const angularTemplateFormatterEnableCommand = vscode.commands.registerCommand('extension.aron.template.format.enable', () => {
+        angularTemplateFormatter.enabled = true;
+    });
+
+    const angularTemplateFormatterDisableCommand = vscode.commands.registerCommand('extension.aron.template.format.disable', () => {
+        angularTemplateFormatter.enabled = false;
+    });
+
     const onWillSaveTextDocumentEvent = vscode.workspace.onWillSaveTextDocument(e => {
-        formatAngularTemplate();
+        angularTemplateFormatter.formatVscodeDocument();
 
         let workResult = importSorter.work();
         if (workResult) {
@@ -44,6 +57,9 @@ export function activate(context: vscode.ExtensionContext) {
         aronImportSortCommand,
         aronImportEnableCommand,
         aronImportDisableCommand,
+        angularTemplateFormatCommand,
+        angularTemplateFormatterEnableCommand,
+        angularTemplateFormatterDisableCommand,
         onWillSaveTextDocumentEvent,
     );
 }
