@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.0.9
+
+- Fix a Angular Template Formatter bug.
+
 ## 0.0.8
 - Refactor extension code.
 - Add AngularTemplateFormatter. It's default disabled now as it's an experimental feature. Enable it using command `Aron Template Format Enable`.

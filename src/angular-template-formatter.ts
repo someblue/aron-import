@@ -223,7 +223,7 @@ export class AngularTemplateFormatter {
             node.visit(visitor, null);
         });
         const builderResult = builder.toString();
-        return builderResult.split('\n').map(e => baseIndent + e).join('\n');
+        return builderResult.split('\n').map(e => e.trim() ? baseIndent + e : '').join('\n');
     }
 
     formatVscodeDocument() {
