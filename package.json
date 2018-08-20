@@ -2,7 +2,7 @@
     "name": "aron-import",
     "displayName": "aron-import",
     "description": "Typescript import sorter",
-    "version": "0.0.10",
+    "version": "0.1.0",
     "publisher": "someblueszr",
     "engines": {
         "vscode": "^1.25.0"
@@ -19,34 +19,37 @@
         "onCommand:extension.aronImportSort",
         "onCommand:extension.aronImportEnable",
         "onCommand:extension.aronImportDisable",
+        "onCommand:extension.aronTemplateFormat",
+        "onCommand:extension.aronTemplateFormatEnable",
+        "onCommand:extension.aronTemplateFormatDisable",
         "onLanguage:typescript"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.aron.import.sort",
-                "title": "Aron Import Sort"
+                "command": "extension.aronImportSort",
+                "title": "Aron: Import Sort"
             },
             {
-                "command": "extension.aron.import.enable",
-                "title": "Aron Import Enable"
+                "command": "extension.aronImportEnable",
+                "title": "Aron: Import Enable"
             },
             {
-                "command": "extension.aron.import.disable",
-                "title": "Aron Import Disable"
+                "command": "extension.aronImportDisable",
+                "title": "Aron: Import Disable"
             },
             {
-                "command": "extension.aron.template.format",
-                "title": "Aron Template Format"
+                "command": "extension.aronTemplateFormat",
+                "title": "Aron: Template Format"
             },
             {
-                "command": "extension.aron.template.format.enable",
-                "title": "Aron Template Format Enable"
+                "command": "extension.aronTemplateFormatEnable",
+                "title": "Aron: Template Format Enable"
             },
             {
-                "command": "extension.aron.template.format.disable",
-                "title": "Aron Template Format Disable"
+                "command": "extension.aronTemplateFormatDisable",
+                "title": "Aron: Template Format Disable"
             }
         ]
     },

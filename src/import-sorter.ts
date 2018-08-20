@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 
 import { Path } from './path';
 import { AronConfig } from './aron-config';
+import { ReplaceEdition, Edition } from './vscode-edition';
 
 const projectAbsolutePathDepth = 2;
 
@@ -104,7 +105,7 @@ export class ImportSorter {
         this._enabled = value;
     }
 
-    work(): Thenable<any> | null {
+    work(): Thenable<Edition | null> | null {
         if (!this.enabled) {
             return null;
         }
@@ -153,22 +154,24 @@ export class ImportSorter {
         const docPath = convertToSlashPath(doc.uri.fsPath);
         return AronConfig.parse(docPath).then(aronConfig => {
             if (!vscode.window.activeTextEditor) {
-                return false;
+                return null;
             }
 
             importDeclares.forEach(e => e.normalizePath(docPath));
             const importSections = this.sortImportDeclares(importDeclares, aronConfig ? aronConfig.customLibraryPatterns : []);
+            const importSectionsString = importSections
+                .filter(sec => sec.length > 0)
+                .map(sec => {
+                    return sec.map(e => `import ${e.tokens} from '${e.path}';`).join('\n');
+                })
+                .join('\n\n');
 
-            return vscode.window.activeTextEditor.edit(editBuilder => {
-                editBuilder.replace(
-                    new vscode.Range(startPos, endPos),
-                    importSections
-                        .filter(sec => sec.length > 0)
-                        .map(sec => {
-                            return sec.map(e => `import ${e.tokens} from '${e.path}';`).join('\n');
-                        })
-                        .join('\n\n'));
-            });
+            // return vscode.window.activeTextEditor.edit(editBuilder => {
+            //     editBuilder.replace(
+            //         new vscode.Range(startPos, endPos),
+            //         importSectionsString);
+            // });
+            return new ReplaceEdition(new vscode.Range(startPos, endPos), importSectionsString);
         });
     }
 

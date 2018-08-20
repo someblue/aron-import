@@ -5,6 +5,30 @@ import * as vscode from 'vscode';
 
 import { ImportSorter } from './import-sorter';
 import { AngularTemplateFormatterExtension } from './angular-template-formatter.ext';
+import { Edition } from './vscode-edition';
+
+function execEditions(...results: Array<Thenable<Edition | null> | null>): Thenable<any> | null {
+    let editionThenables: Thenable<Edition | null>[] = [];
+    results.forEach(e => {
+        if (e) {
+            editionThenables.push(e);
+        }
+    });
+
+    if (editionThenables.length === 0) {
+        return null;
+    }
+
+    return Promise.all(editionThenables)
+        .then(editions => {
+            if (!vscode.window.activeTextEditor) {
+                return false;
+            }
+            return vscode.window.activeTextEditor.edit(editBuilder => {
+                editions.forEach(e => e && e.exec(editBuilder));
+            });
+        });
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -20,36 +44,37 @@ export function activate(context: vscode.ExtensionContext) {
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
-    const aronImportSortCommand = vscode.commands.registerCommand('extension.aron.import.sort', () => {
-        importSorter.work();
+    const aronImportSortCommand = vscode.commands.registerCommand('extension.aronImportSort', () => {
+        execEditions(importSorter.work());
     });
 
-    const aronImportEnableCommand = vscode.commands.registerCommand('extension.aron.import.enable', () => {
+    const aronImportEnableCommand = vscode.commands.registerCommand('extension.aronImportEnable', () => {
         importSorter.enabled = true;
     });
 
-    const aronImportDisableCommand = vscode.commands.registerCommand('extension.aron.import.disable', () => {
+    const aronImportDisableCommand = vscode.commands.registerCommand('extension.aronImportDisable', () => {
         importSorter.enabled = false;
     });
 
-    const angularTemplateFormatCommand = vscode.commands.registerCommand('extension.aron.template.format', () => {
-        angularTemplateFormatterExt.formatVscodeDocument();
+    const angularTemplateFormatCommand = vscode.commands.registerCommand('extension.aronTemplateFormat', () => {
+        execEditions(angularTemplateFormatterExt.formatVscodeDocument());
     });
 
-    const angularTemplateFormatterEnableCommand = vscode.commands.registerCommand('extension.aron.template.format.enable', () => {
+    const angularTemplateFormatterEnableCommand = vscode.commands.registerCommand('extension.aronTemplateFormatEnable', () => {
         angularTemplateFormatterExt.enabled = true;
     });
 
-    const angularTemplateFormatterDisableCommand = vscode.commands.registerCommand('extension.aron.template.format.disable', () => {
+    const angularTemplateFormatterDisableCommand = vscode.commands.registerCommand('extension.aronTemplateFormatDisable', () => {
         angularTemplateFormatterExt.enabled = false;
     });
 
     const onWillSaveTextDocumentEvent = vscode.workspace.onWillSaveTextDocument(e => {
-        angularTemplateFormatterExt.formatVscodeDocument();
-
-        let workResult = importSorter.work();
-        if (workResult) {
-            e.waitUntil(workResult);
+        let thenable = execEditions(
+            angularTemplateFormatterExt.formatVscodeDocument(),
+            importSorter.work(),
+        );
+        if (thenable) {
+            e.waitUntil(thenable);
         }
     });
 
