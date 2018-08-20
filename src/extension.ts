@@ -4,7 +4,7 @@
 import * as vscode from 'vscode';
 
 import { ImportSorter } from './import-sorter';
-import { AngularTemplateFormatter } from './angular-template-formatter';
+import { AngularTemplateFormatterExtension } from './angular-template-formatter.ext';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -15,7 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "aron-import" is now active!');
 
     const importSorter = new ImportSorter();
-    const angularTemplateFormatter = new AngularTemplateFormatter();
+    const angularTemplateFormatterExt = new AngularTemplateFormatterExtension();
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand
@@ -33,19 +33,19 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     const angularTemplateFormatCommand = vscode.commands.registerCommand('extension.aron.template.format', () => {
-        angularTemplateFormatter.formatVscodeDocument();
+        angularTemplateFormatterExt.formatVscodeDocument();
     });
 
     const angularTemplateFormatterEnableCommand = vscode.commands.registerCommand('extension.aron.template.format.enable', () => {
-        angularTemplateFormatter.enabled = true;
+        angularTemplateFormatterExt.enabled = true;
     });
 
     const angularTemplateFormatterDisableCommand = vscode.commands.registerCommand('extension.aron.template.format.disable', () => {
-        angularTemplateFormatter.enabled = false;
+        angularTemplateFormatterExt.enabled = false;
     });
 
     const onWillSaveTextDocumentEvent = vscode.workspace.onWillSaveTextDocument(e => {
-        angularTemplateFormatter.formatVscodeDocument();
+        angularTemplateFormatterExt.formatVscodeDocument();
 
         let workResult = importSorter.work();
         if (workResult) {

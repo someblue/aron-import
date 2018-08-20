@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import { HtmlParser, Visitor, Attribute, Element, Expansion, Text, Comment, ExpansionCase } from '@angular/compiler';
 
 import { StringUtil } from './string.util';
@@ -166,12 +165,37 @@ class AronHtmlVisitor implements Visitor {
         private builder: AronHtmlBuilder,
     ) { }
 
+    private readonly selfCloseTags = [
+		'area',
+        'base',
+        'br',
+        'col',
+        'command',
+        'embed',
+        'hr',
+        'img',
+        'input',
+        'keygen',
+        'link',
+        'menuitem',
+        'meta',
+        'param',
+        'source',
+        'track',
+        'wbr',
+    ];
+
+    private isSelfCloseTag(tagName: string): boolean {
+        return this.selfCloseTags.indexOf(tagName) >= 0
+    }
+
     visitElement(element: Element, ctx: any) {
         this.builder.openTag(element.name);
         element.attrs.forEach(e => e.visit(this, ctx));
         element.children.forEach(e => e.visit(this, ctx));
-        const isSelfClose = element.startSourceSpan !== null && element.endSourceSpan !== null &&
-            element.startSourceSpan.toString() === element.endSourceSpan.toString();
+        // const isSelfClose = element.startSourceSpan !== null && element.endSourceSpan !== null &&
+        //     element.startSourceSpan.toString() === element.endSourceSpan.toString();
+        const isSelfClose = this.isSelfCloseTag(element.name);
         this.builder.closeTag(isSelfClose);
     }
 
@@ -202,16 +226,6 @@ class AronHtmlVisitor implements Visitor {
 }
 
 export class AngularTemplateFormatter {
-    private _enabled = false;
-
-    get enabled(): boolean {
-        return this._enabled;
-    }
-
-    set enabled(value: boolean) {
-        this._enabled = value;
-    }
-
     // baseIndent default 8 space
     work(src: string, baseIndent: string = '        '): string {
         const rawHtmlParser = new HtmlParser();
@@ -224,44 +238,5 @@ export class AngularTemplateFormatter {
         });
         const builderResult = builder.toString();
         return builderResult.split('\n').map(e => e.trim() ? baseIndent + e : '').join('\n');
-    }
-
-    formatVscodeDocument() {
-        if (!this.enabled) {
-            return;
-        }
-
-        if (!vscode.window.activeTextEditor) {
-            vscode.window.showInformationMessage('no active editor');
-            return;
-        }
-
-        const doc = vscode.window.activeTextEditor.document;
-        if (doc.languageId !== 'typescript') {
-            return;
-        }
-
-        const docText = doc.getText();
-        let result = /template\s*:\s*`([\s\S]*)`/.exec(docText);
-        if (!result) {
-            return;
-        }
-
-        const template = result[1];
-        const templateStartOffset = docText.indexOf(template);
-        const templateEndOffset = templateStartOffset + template.length;
-        const templateStartPosition = doc.positionAt(templateStartOffset);
-        const templateEndPosition = doc.positionAt(templateEndOffset);
-        const templateRange = new vscode.Range(templateStartPosition, templateEndPosition);
-
-        try {
-            const formatter = new AngularTemplateFormatter();
-            const formattedTemplate = formatter.work(template);
-            vscode.window.activeTextEditor.edit(editBuilder => {
-                editBuilder.replace(templateRange, '\n' + formattedTemplate + '\n    ');
-            });
-        } catch (e) {
-            vscode.window.showInformationMessage('parse template fail');
-        }
     }
 }

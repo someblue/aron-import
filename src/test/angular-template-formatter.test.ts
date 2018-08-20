@@ -19,6 +19,7 @@ suite("Extension Tests", function () {
                      [style.height.px]="Sizer.height | alphaColor">
 
             <img style="background-color:black" [attr.src]="http://dummy.com"/>
+            <input>
 
                             </div>
                 <!-- multiline comment
@@ -40,28 +41,29 @@ suite("Extension Tests", function () {
         assert.equal(
             result.trim(),
             `
-<!-- comp-wrapper -->
-<div class="comp-wrapper
-            wh-100-pc">
-    <div *ngFor="let e of imgUrls; let i = index; let isFirst = first"
-         [style.height.px]="Sizer.height | alphaColor">
+        <!-- comp-wrapper -->
+        <div class="comp-wrapper
+                    wh-100-pc">
+            <div *ngFor="let e of imgUrls; let i = index; let isFirst = first"
+                 [style.height.px]="Sizer.height | alphaColor">
 
-        <img style="background-color:black;"
-             [attr.src]="http://dummy.com"/>
+                <img style="background-color:black;"
+                     [attr.src]="http://dummy.com"/>
+                <input/>
 
-    </div>
-    <!--
-        multiline comment
-        line2
-        line3
-    -->
-    <ng-template #tmplXxx>
-        {{ abc }}
-        hahaha
-        wtf
-        xyz
-    </ng-template>
-</div>
+            </div>
+            <!--
+                multiline comment
+                line2
+                line3
+            -->
+            <ng-template #tmplXxx>
+                {{ abc }}
+                hahaha
+                wtf
+                xyz
+            </ng-template>
+        </div>
             `.trim());
     });
 
