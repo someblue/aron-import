@@ -1,4 +1,6 @@
+import * as vscode from 'vscode';
 import { HtmlParser, Visitor, Attribute, Element, Expansion, Text, Comment, ExpansionCase } from '@angular/compiler';
+
 import { StringUtil } from './string.util';
 
 export class AronHtmlBuilder {
@@ -14,7 +16,7 @@ export class AronHtmlBuilder {
     ) { }
 
     toString(): string {
-        return this.buffer.join('');
+        return this.buffer.join('').trim();
     }
 
     openTag(tagName: string) {
@@ -200,7 +202,8 @@ class AronHtmlVisitor implements Visitor {
 }
 
 export class AngularTemplateFormatter {
-    work(src: string): string {
+    // baseIndent default 8 space
+    work(src: string, baseIndent: string = '        '): string {
         const rawHtmlParser = new HtmlParser();
         const htmlResult = rawHtmlParser.parse(src, '', true);
 
@@ -209,6 +212,42 @@ export class AngularTemplateFormatter {
         htmlResult.rootNodes.forEach(node => {
             node.visit(visitor, null);
         });
-        return builder.toString();
+        const builderResult = builder.toString();
+        return builderResult.split('\n').map(e => baseIndent + e).join('\n');
+    }
+}
+
+export function formatAngularTemplate() {
+    if (!vscode.window.activeTextEditor) {
+        vscode.window.showInformationMessage('no active editor');
+        return;
+    }
+
+    const doc = vscode.window.activeTextEditor.document;
+    if (doc.languageId !== 'typescript') {
+        return;
+    }
+
+    const docText = doc.getText();
+    let result = /template\s*:\s*`([\s\S]*)`/.exec(docText);
+    if (!result) {
+        return;
+    }
+
+    const template = result[1];
+    const templateStartOffset = docText.indexOf(template);
+    const templateEndOffset = templateStartOffset + template.length;
+    const templateStartPosition = doc.positionAt(templateStartOffset);
+    const templateEndPosition = doc.positionAt(templateEndOffset);
+    const templateRange = new vscode.Range(templateStartPosition, templateEndPosition);
+
+    try {
+        const formatter = new AngularTemplateFormatter();
+        const formattedTemplate = formatter.work(template);
+        vscode.window.activeTextEditor.edit(editBuilder => {
+            editBuilder.replace(templateRange, '\n' + formattedTemplate + '\n    ');
+        });
+    } catch (e) {
+        vscode.window.showInformationMessage('parse template fail');
     }
 }

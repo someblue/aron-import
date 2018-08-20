@@ -4,6 +4,7 @@
 import * as vscode from 'vscode';
 
 import { ImportSorter } from './import-sorter';
+import { formatAngularTemplate } from './angular-template-formatter';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -31,6 +32,8 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     const onWillSaveTextDocumentEvent = vscode.workspace.onWillSaveTextDocument(e => {
+        formatAngularTemplate();
+
         let workResult = importSorter.work();
         if (workResult) {
             e.waitUntil(workResult);
