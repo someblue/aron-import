@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 
 import { Path } from './path';
 import { AronConfig } from './aron-config';
-import { ReplaceEdition, Edition } from './vscode-edition';
+import { ReplaceEdition, Edition, NullEdition } from './vscode-edition';
 
 const projectAbsolutePathDepth = 2;
 
@@ -105,20 +105,20 @@ export class ImportSorter {
         this._enabled = value;
     }
 
-    work(): Thenable<Edition | null> | null {
+    work(): Thenable<Edition> {
         if (!this.enabled) {
-            return null;
+            return NullEdition.asThenable;
         }
 
         if (!vscode.window.activeTextEditor) {
             vscode.window.showInformationMessage('no active editor');
-            return null;
+            return NullEdition.asThenable;
         }
 
         const doc = vscode.window.activeTextEditor.document;
 
         if (doc.languageId !== 'typescript') {
-            return null;
+            return NullEdition.asThenable;
         }
 
         let importDeclares: ImportDeclare[] = [];
@@ -148,13 +148,13 @@ export class ImportSorter {
         }
 
         if (!importDeclares.length) {
-            return null;
+            return NullEdition.asThenable;
         }
 
         const docPath = convertToSlashPath(doc.uri.fsPath);
         return AronConfig.parse(docPath).then(aronConfig => {
             if (!vscode.window.activeTextEditor) {
-                return null;
+                return NullEdition.instance;
             }
 
             importDeclares.forEach(e => e.normalizePath(docPath));
@@ -166,11 +166,6 @@ export class ImportSorter {
                 })
                 .join('\n\n');
 
-            // return vscode.window.activeTextEditor.edit(editBuilder => {
-            //     editBuilder.replace(
-            //         new vscode.Range(startPos, endPos),
-            //         importSectionsString);
-            // });
             return new ReplaceEdition(new vscode.Range(startPos, endPos), importSectionsString);
         });
     }

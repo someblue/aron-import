@@ -6,15 +6,9 @@ import * as vscode from 'vscode';
 import { ImportSorter } from './import-sorter';
 import { AngularTemplateFormatterExtension } from './angular-template-formatter.ext';
 import { Edition } from './vscode-edition';
+import { Logger } from './logger/logger';
 
-function execEditions(...results: Array<Thenable<Edition | null> | null>): Thenable<any> | null {
-    let editionThenables: Thenable<Edition | null>[] = [];
-    results.forEach(e => {
-        if (e) {
-            editionThenables.push(e);
-        }
-    });
-
+function execEditions(...editionThenables: Thenable<Edition>[]): Thenable<any> | null {
     if (editionThenables.length === 0) {
         return null;
     }
@@ -30,14 +24,13 @@ function execEditions(...results: Array<Thenable<Edition | null> | null>): Thena
         });
 }
 
+function displayErrorMessage() {
+    vscode.window.showErrorMessage('Aron encounter error, check more details on View -> Output -> Aron');
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "aron-import" is now active!');
-
     const importSorter = new ImportSorter();
     const angularTemplateFormatterExt = new AngularTemplateFormatterExtension();
 
@@ -45,7 +38,12 @@ export function activate(context: vscode.ExtensionContext) {
     // Now provide the implementation of the command with  registerCommand
     // The commandId parameter must match the command field in package.json
     const aronImportSortCommand = vscode.commands.registerCommand('extension.aronImportSort', () => {
-        execEditions(importSorter.work());
+        try {
+            execEditions(importSorter.work());
+        } catch (e) {
+            Logger.error(`error on execute aronImportSort command [${e}]`);
+            displayErrorMessage();
+        }
     });
 
     const aronImportEnableCommand = vscode.commands.registerCommand('extension.aronImportEnable', () => {
@@ -57,7 +55,12 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     const angularTemplateFormatCommand = vscode.commands.registerCommand('extension.aronTemplateFormat', () => {
-        execEditions(angularTemplateFormatterExt.formatVscodeDocument());
+        try {
+            execEditions(angularTemplateFormatterExt.formatVscodeDocument());
+        } catch (e) {
+            Logger.error(`error on execute aronTemplateFormat command [${e}]`);
+            displayErrorMessage();
+        }
     });
 
     const angularTemplateFormatterEnableCommand = vscode.commands.registerCommand('extension.aronTemplateFormatEnable', () => {
@@ -69,12 +72,19 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     const onWillSaveTextDocumentEvent = vscode.workspace.onWillSaveTextDocument(e => {
-        let thenable = execEditions(
-            angularTemplateFormatterExt.formatVscodeDocument(),
-            importSorter.work(),
-        );
-        if (thenable) {
-            e.waitUntil(thenable);
+        try {
+            Logger.info(`detect file [${e.document.fileName}] save event`);
+
+            let thenable = execEditions(
+                angularTemplateFormatterExt.formatVscodeDocument(),
+                importSorter.work(),
+            );
+            if (thenable) {
+                e.waitUntil(thenable);
+            }
+        } catch (e) {
+            Logger.error(`error on save document event [${e}]`);
+            displayErrorMessage();
         }
     });
 
@@ -87,6 +97,8 @@ export function activate(context: vscode.ExtensionContext) {
         angularTemplateFormatterDisableCommand,
         onWillSaveTextDocumentEvent,
     );
+
+    Logger.info('aron has activated');
 }
 
 // this method is called when your extension is deactivated
