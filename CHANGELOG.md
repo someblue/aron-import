@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.1.2
+- Fix import-sorter can't handle comment import
+
 ## 0.0.9
 
 - Fix a Angular Template Formatter bug.
