@@ -48,6 +48,7 @@ enum PathType {
 }
 
 class ImportDeclare {
+    public isComment = false;
     public text = '';
     public tokens = '';
     public path = '';
@@ -91,6 +92,14 @@ class ImportDeclare {
 
         this.type = PathType.ProjectRelative;
         return;
+    }
+
+    public render(): string {
+        let text = `import ${this.tokens} from '${this.path}';`;
+        if (this.isComment) {
+            text = '// ' + text;
+        }
+        return text;
     }
 }
 
@@ -144,6 +153,9 @@ export class ImportSorter {
             importDeclare.text = line.text;
             importDeclare.tokens = result[1];
             importDeclare.path = result[2];
+            if (line.text.trim().startsWith("//")) {
+                importDeclare.isComment = true;
+            }
             importDeclares.push(importDeclare);
         }
 
@@ -162,7 +174,7 @@ export class ImportSorter {
             const importSectionsString = importSections
                 .filter(sec => sec.length > 0)
                 .map(sec => {
-                    return sec.map(e => `import ${e.tokens} from '${e.path}';`).join('\n');
+                    return sec.map(e => e.render()).join('\n');
                 })
                 .join('\n\n');
 
