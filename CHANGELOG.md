@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.1.3
+- Fix import-sorter can't handle import format like "import 'xyz';"
+
 ## 0.1.2
 - Fix import-sorter can't handle comment import
 

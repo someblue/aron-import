@@ -49,10 +49,40 @@ enum PathType {
 
 class ImportDeclare {
     public isComment = false;
+    public hasTokenPart = false;
     public text = '';
     public tokens = '';
     public path = '';
     public type = PathType.Untyped;
+
+    public static parse(text: string): ImportDeclare | undefined {
+        let importDeclare = new ImportDeclare();
+
+        const hasTokenPartRe = /import (.*) from ['"]([a-zA-Z0-9@/\-_\.]*)['"]/;
+        const hasTokenPartResult = hasTokenPartRe.exec(text);
+        if (hasTokenPartResult) {
+            importDeclare.hasTokenPart = false;
+            importDeclare.tokens = hasTokenPartResult[1];
+            importDeclare.path = hasTokenPartResult[2];
+        }
+
+        const noTokenPartRe = /import\s+['"]([a-zA-Z0-9@/\-_\.]*)['"]/;
+        const noTokenPartResult = noTokenPartRe.exec(text);
+        if (noTokenPartResult) {
+            importDeclare.hasTokenPart = true;
+            importDeclare.path = noTokenPartResult[1];
+        }
+
+        if (!hasTokenPartResult && !noTokenPartResult) {
+            return undefined;
+        }
+
+        importDeclare.text = text;
+        if (text.trim().startsWith("//")) {
+            importDeclare.isComment = true;
+        }
+        return importDeclare;
+    }
 
     public normalizePath(fileAbsPath: string) {
         if (stringContains(this.path, '@angular')) {
@@ -95,7 +125,9 @@ class ImportDeclare {
     }
 
     public render(): string {
-        let text = `import ${this.tokens} from '${this.path}';`;
+        let text = this.hasTokenPart ?
+            `import '${this.path}';` :
+            `import ${this.tokens} from '${this.path}';`;
         if (this.isComment) {
             text = '// ' + text;
         }
@@ -139,9 +171,8 @@ export class ImportSorter {
                 continue;
             }
 
-            const re = /import (.*) from ['"]([a-zA-Z0-9@/\-_\.]*)['"]/;
-            const result = re.exec(line.text);
-            if (!result) {
+            const importDeclare = ImportDeclare.parse(line.text);
+            if (!importDeclare) {
                 break;
             }
 
@@ -149,13 +180,7 @@ export class ImportSorter {
                 startPos = line.range.start;
             }
             endPos = line.range.end;
-            let importDeclare = new ImportDeclare();
-            importDeclare.text = line.text;
-            importDeclare.tokens = result[1];
-            importDeclare.path = result[2];
-            if (line.text.trim().startsWith("//")) {
-                importDeclare.isComment = true;
-            }
+
             importDeclares.push(importDeclare);
         }
 
