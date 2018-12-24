@@ -59,7 +59,7 @@
         "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test",
-        "test:formatter": "mocha --ui tdd out/test/angular-template-formatter.test.js"
+        "test:formatter": "npm run compile && mocha --ui tdd out/test/angular-template-formatter.test.js"
     },
     "devDependencies": {
         "@types/mocha": "^2.2.42",

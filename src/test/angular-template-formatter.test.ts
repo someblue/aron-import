@@ -18,7 +18,7 @@ suite("Extension Tests", function () {
                 <div *ngFor="let e of imgUrls; let i = index; let isFirst = first"
                      [style.height.px]="Sizer.height | alphaColor">
 
-            <img style="background-color:black" [attr.src]="http://dummy.com"/>
+            <img style="background-color:black;" [attr.src]="http://dummy.com"/>
             <input>
 
                             </div>

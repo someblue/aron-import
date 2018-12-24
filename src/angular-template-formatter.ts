@@ -68,7 +68,7 @@ export class AronHtmlBuilder {
             value = value.split(/\s+/).join('\n');
         }
         if (name === 'style') {
-            value = value.split(';').map(e => e + ';').join('\n');
+            value = value.split(';').filter(e => !(/^\s*$/.test(e))).map(e => e + ';').join('\n');
         }
 
         if (value.indexOf('\n') === -1) {
@@ -166,7 +166,7 @@ class AronHtmlVisitor implements Visitor {
     ) { }
 
     private readonly selfCloseTags = [
-		'area',
+        'area',
         'base',
         'br',
         'col',
@@ -186,7 +186,7 @@ class AronHtmlVisitor implements Visitor {
     ];
 
     private isSelfCloseTag(tagName: string): boolean {
-        return this.selfCloseTags.indexOf(tagName) >= 0
+        return this.selfCloseTags.indexOf(tagName) >= 0;
     }
 
     visitElement(element: Element, ctx: any) {
