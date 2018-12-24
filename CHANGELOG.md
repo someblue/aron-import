@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.1.4
+- Fix template-formatter add extra line for style="..."
+
 ## 0.1.3
 - Fix import-sorter can't handle import format like "import 'xyz';"
 
