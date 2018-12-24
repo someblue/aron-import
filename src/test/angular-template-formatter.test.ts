@@ -31,7 +31,7 @@ suite("Extension Tests", function () {
                     {{ abc }}
     hahaha
                         wtf
-                    xyz
+                    xyz&lt;&nbsp;&gt;
 
                     
                         </ng-template>
@@ -61,7 +61,7 @@ suite("Extension Tests", function () {
                 {{ abc }}
                 hahaha
                 wtf
-                xyz
+                xyz&lt;&nbsp;&gt;
             </ng-template>
         </div>
             `.trim());
@@ -76,7 +76,7 @@ suite("Extension Tests", function () {
         builder.openTag('img');
         builder.attritube('[attr.src]', 'http://www.dummy.com');
         builder.closeTag(true);
-        builder.text('{{ content }}');
+        builder.text('{{ content }}&nbsp;');
         builder.closeTag(false);
 
         assert.equal(
@@ -90,7 +90,7 @@ suite("Extension Tests", function () {
             height:20px;"
      [style.height.px]="Sizer.heightPx">
     <img [attr.src]="http://www.dummy.com"/>
-    {{ content }}
+    {{ content }}&nbsp;
 </div>
             `.trim());
     });
