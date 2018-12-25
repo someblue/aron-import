@@ -1,4 +1,4 @@
-import { HtmlParser, Visitor, Attribute, Element, Expansion, Text, Comment, ExpansionCase } from '@angular/compiler';
+import { HtmlParser, Visitor, Attribute, Element, Expansion, Text, Comment, ExpansionCase, NAMED_ENTITIES } from '@angular/compiler';
 
 import { StringUtil } from './string.util';
 
@@ -225,9 +225,39 @@ class AronHtmlVisitor implements Visitor {
     }
 }
 
+// Angular html parser will convert named entities to the converted character, etc. '&nbsp' -> ' ', '&gt' -> '>'.
+// However this conversion is unexpected, our source code need to retain as '&nbsp'.
+// Angular html parser doesn't provide configure to disable conversion.
+// I use this middleware to preprocess source code by converting named entities to a special format before sending it to parser,
+// and postprocess result by converting special format to named entities after formation is completed.
+export class NamedEntitiesMiddleware {
+    preprocess(src: string): string {
+        // NAMED_ENTITIES includes:
+        //     'nbsp': '\u00A0',
+        //     'gt': '>',
+        //     ......
+        for (let name in NAMED_ENTITIES) {
+            var regex = new RegExp('&' + name, 'igm');
+            src = src.replace(regex, `$NAMED_ENTITIES(${name})`);
+        }
+        return src;
+    }
+
+    postprocess(src: string): string {
+        for (let name in NAMED_ENTITIES) {
+            var regex = new RegExp(`\\\$NAMED_ENTITIES\\\(${name}\\\)`, 'igm');
+            src = src.replace(regex, '&' + name);
+        }
+        return src;
+    }
+}
+
 export class AngularTemplateFormatter {
     // baseIndent default 8 space
     work(src: string, baseIndent: string = '        '): string {
+        const namedEntitiesMiddleware = new NamedEntitiesMiddleware();
+        src = namedEntitiesMiddleware.preprocess(src);
+
         const rawHtmlParser = new HtmlParser();
         const htmlResult = rawHtmlParser.parse(src, '', true);
 
@@ -236,7 +266,8 @@ export class AngularTemplateFormatter {
         htmlResult.rootNodes.forEach(node => {
             node.visit(visitor, null);
         });
-        const builderResult = builder.toString();
-        return builderResult.split('\n').map(e => e.trim() ? baseIndent + e : '').join('\n');
+        const builderResult = builder.toString()
+            .split('\n').map(e => e.trim() ? baseIndent + e : '').join('\n');
+        return namedEntitiesMiddleware.postprocess(builderResult);
     }
 }

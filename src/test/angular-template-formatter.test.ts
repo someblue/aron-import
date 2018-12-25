@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 
-import { AngularTemplateFormatter, AronHtmlBuilder } from '../angular-template-formatter';
+import { AngularTemplateFormatter, AronHtmlBuilder, NamedEntitiesMiddleware } from '../angular-template-formatter';
 
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
@@ -93,5 +93,17 @@ suite("Extension Tests", function () {
     {{ content }}&nbsp;
 </div>
             `.trim());
+    });
+
+    test('named-entities-middleware', function () {
+        const middleware = new NamedEntitiesMiddleware();
+        const rawSrc = '<div> &nbsp; </div> <div> &gt </div> <div> &lt;; </div>';
+        const expectedPreprocessedSrc = '<div> $NAMED_ENTITIES(nbsp); </div> <div> $NAMED_ENTITIES(gt) </div> <div> $NAMED_ENTITIES(lt);; </div>';
+
+        const actualPreprocessedSrc = middleware.preprocess(rawSrc);
+        assert.equal(actualPreprocessedSrc, expectedPreprocessedSrc);
+
+        const actualPostprocessSrc = middleware.postprocess(actualPreprocessedSrc);
+        assert.equal(actualPostprocessSrc, rawSrc);
     });
 });
