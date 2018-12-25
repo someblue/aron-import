@@ -16,6 +16,7 @@ suite("Extension Tests", function () {
     <div class="comp-wrapper
                         wh-100-pc">
                 <div *ngFor="let e of imgUrls; let i = index; let isFirst = first"
+                     style="width: 150px; height: 36px;"
                      [style.height.px]="Sizer.height | alphaColor">
 
             <img style="background-color:black;" [attr.src]="http://dummy.com"/>
@@ -37,14 +38,13 @@ suite("Extension Tests", function () {
                         </ng-template>
             </div>
         `;
-        const result = formatter.work(template);
-        assert.equal(
-            result.trim(),
-            `
+        const expectedResult = `
         <!-- comp-wrapper -->
         <div class="comp-wrapper
                     wh-100-pc">
             <div *ngFor="let e of imgUrls; let i = index; let isFirst = first"
+                 style="width: 150px;
+                        height: 36px;"
                  [style.height.px]="Sizer.height | alphaColor">
 
                 <img style="background-color:black;"
@@ -63,8 +63,18 @@ suite("Extension Tests", function () {
                 wtf
                 xyz&lt;&nbsp;&gt;
             </ng-template>
-        </div>
-            `.trim());
+        </div>`;
+        const actualResult = formatter.work(template);
+
+        assert.equal(actualResult.trim(), expectedResult.trim());
+
+        const repeatTimes = 3;
+        var formattedResult = actualResult;
+        for (let i = 0; i < repeatTimes; i++) {
+            const lastResult = formattedResult;
+            formattedResult = formatter.work(actualResult);
+            assert.equal(formattedResult.trim(), lastResult.trim(), 'the result should be same when format repeatly');
+        }
     });
 
     test('builder', function () {

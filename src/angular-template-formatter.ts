@@ -68,7 +68,7 @@ export class AronHtmlBuilder {
             value = value.split(/\s+/).join('\n');
         }
         if (name === 'style') {
-            value = value.split(';').filter(e => !(/^\s*$/.test(e))).map(e => e + ';').join('\n');
+            value = value.split(';').filter(e => e.trim().length > 0).map(e => e.trim() + ';').join('\n');
         }
 
         if (value.indexOf('\n') === -1) {

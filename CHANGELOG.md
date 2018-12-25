@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.1.6
+- Fix template-formatter add extra line for style="...", add more test case
+
 ## 0.1.5
 - Fix template-formatter swallow html named entities, etc. &nbsp &gt
 
