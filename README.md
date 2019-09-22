@@ -1,42 +1,27 @@
-# aron-import README
+AronImport is a VSCode extension used in Netease MoltenCore team, in order to improve productivity and code quality.
 
-Typescript import sorter.
+* [Sort "import" statements of TypeScript code](#sort-import)
+* [Format inline template of Angular component](#format-template)
 
-## Features
-
-### Sort Import
-
-The order of typescript file will be sort automatically on save file. Unnecessary import path like `../../node_modules/...` will be remove at the same time.
-
-All you need to do just save file as before.
+## Sort Import
 
 ![demo-01](demo.01.gif)
 
-### Format Template
+Sort "import" statements of TypeScript code, in the order of MoltenCore team convention.
 
-Angular template will be formatted on save.
+Import statements are divided into 4 section in following order, Statements of each section are sorted alphabetically by paths.
+1. Standard libraries.
+2. Third party libraries.
+3. Absolute paths to modules of current project.
+4. Relative paths to modules of current project.
 
-## Commands
+## Format Template
 
-press `F1` then enter `aron: import sort` to trigger sort manually.
+![demo-02](demo.02.gif)
 
-press `F1` then enter `aron: import disable` to disable automatical sort.
+Format inline template of Angular component.
 
-press `F1` then enter `aron: import enable` to enable automatical sort again.
-
-press `F1` then enter `aron: template format` to trigger template format manually.
-
-press `F1` then enter `aron: template disable` to disable automatical format.
-
-press `F1` then enter `aron: template enable` to enable automatical format.
-
-## Known Issues
-
-Can't recognize mutiply line import like below. Please `aronImportDisable` temporarily. I will try to fix it soon.
-
-```typescript
-import {
-    Component,
-    OnInit,
-} from '@angular/core';
-```
+These are some extra convention of MoltenCore team:
+1. One content per-line in attributes (e.g "style" "class"). All have the same indent.
+2. Nested tag should indent. Closed tag is wrapped in the next line.
+3. Indent use 4 spaces.

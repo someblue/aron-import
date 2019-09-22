@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.1.7
+- Update README.md
+
 ## 0.1.6
 - Fix template-formatter add extra line for style="...", add more test case
 
